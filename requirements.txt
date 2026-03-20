@@ -1,0 +1,14 @@
+requests
+torch
+pandas
+numpy
+scikit-learn
+matplotlib
+joblib
+tqdm
+ccxt
+python-dotenv
+fastapi
+uvicorn
+jinja2
+python-multipart

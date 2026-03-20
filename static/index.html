@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPT Trading Bot Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --primary: #38bdf8;
+            --success: #10b981;
+            --danger: #ef4444;
+            --text: #f8fafc;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            background: var(--card-bg);
+            padding: 1.5rem 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            background: linear-gradient(to right, var(--primary), #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-running { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+        .status-stopped { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            font-size: 1.125rem;
+            color: #94a3b8;
+            margin-bottom: 1rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            color: white;
+        }
+
+        .btn-start { background-color: var(--success); }
+        .btn-start:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4); }
+
+        .btn-stop { background-color: var(--danger); }
+        .btn-stop:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4); }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th {
+            text-align: left;
+            color: #94a3b8;
+            font-weight: 600;
+            padding: 0.75rem;
+            border-bottom: 1px solid #334155;
+        }
+
+        td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #334155;
+        }
+
+        .pulse {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse-animation 2s infinite;
+        }
+
+        @keyframes pulse-animation {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .chart-container {
+            margin-top: 2rem;
+            position: relative;
+            height: 400px;
+            width: 100%;
+        }
+
+        .primary { color: var(--primary); font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>GPT Multi-Timeframe Bot</h1>
+            <div id="bot-status-badge" class="status-badge status-stopped">
+                <div class="pulse"></div>
+                <span id="status-text">STOPPED</span>
+            </div>
+        </header>
+
+        <div class="grid">
+            <div class="card">
+                <h2>Control Panel</h2>
+                <div class="controls">
+                    <button class="btn-start" onclick="startBot()">START BOT</button>
+                    <button class="btn-stop" onclick="stopBot()">STOP BOT</button>
+                </div>
+            </div>
+            <div class="card">
+                <h2>Current Configuration</h2>
+                <div id="conf-symbols" class="primary">N/A</div>
+                <div style="margin-top: 0.5rem">Check Interval: <span class="primary">15m / 5m</span></div>
+            </div>
+            <div class="card">
+                <h2>Active Trades</h2>
+                <div id="active-count" class="stat-value">0</div>
+            </div>
+        </div>
+        
+        <div class="card" style="margin-top: 2rem">
+            <h2>Backtest Performance (Equity Curve)</h2>
+            <div class="chart-container">
+                <canvas id="equityChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 2rem">
+            <h2>Live Trades</h2>
+            <table id="trades-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Symbol</th>
+                        <th>Entry</th>
+                        <th>SL</th>
+                        <th>TP</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody id="trades-body">
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: #64748b; padding: 2rem;">No active trades</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        async function updateStatus() {
+            try {
+                const res = await fetch('/status');
+                const data = await res.json();
+                
+                const badge = document.getElementById('bot-status-badge');
+                const text = document.getElementById('status-text');
+                
+                if (data.is_running) {
+                    badge.className = 'status-badge status-running';
+                    text.innerText = 'RUNNING';
+                } else {
+                    badge.className = 'status-badge status-stopped';
+                    text.innerText = 'STOPPED';
+                }
+
+                document.getElementById('conf-symbols').innerText = (data.symbols || []).join(', ') || 'N/A';
+                document.getElementById('active-count').innerText = data.active_trades_count || '0';
+
+                updateTrades();
+                updatePerformance();
+            } catch (err) {
+                console.error("Failed to fetch status", err);
+            }
+        }
+
+        async function updateTrades() {
+            try {
+                const res = await fetch('/trades');
+                const data = await res.json();
+                const body = document.getElementById('trades-body');
+                
+                if (data.active.length === 0) {
+                    body.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #64748b; padding: 2rem;">No active trades</td></tr>';
+                    return;
+                }
+
+                body.innerHTML = data.active.map(t => `
+                    <tr>
+                        <td>${new Date(t.timestamp).toLocaleTimeString()}</td>
+                        <td>${t.symbol}</td>
+                        <td>${t.entry_price}</td>
+                        <td style="color: var(--danger)">${t.sl_price}</td>
+                        <td style="color: var(--success)">${t.tp_price}</td>
+                        <td>${t.amount.toFixed(4)}</td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error("Failed to fetch trades", err);
+            }
+        }
+
+        async function startBot() {
+            await fetch('/start', { method: 'POST' });
+            updateStatus();
+        }
+
+        async function stopBot() {
+            await fetch('/stop', { method: 'POST' });
+            updateStatus();
+        }
+
+        let performanceChart = null;
+
+        async function updatePerformance() {
+            try {
+                const res = await fetch('/api/performance');
+                const data = await res.json();
+                
+                if (data.error) return;
+
+                const ctx = document.getElementById('equityChart').getContext('2d');
+                
+                if (performanceChart) {
+                    performanceChart.data.datasets[0].data = data.equity_curve;
+                    performanceChart.update();
+                } else {
+                    performanceChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: data.equity_curve.map((_, i) => i),
+                            datasets: [{
+                                label: 'Equity (USDT)',
+                                data: data.equity_curve,
+                                borderColor: '#38bdf8',
+                                backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                                fill: true,
+                                tension: 0.1,
+                                pointRadius: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                x: { display: false },
+                                y: { 
+                                    grid: { color: '#334155' },
+                                    ticks: { color: '#94a3b8' }
+                                }
+                            }
+                        }
+                    });
+                }
+            } catch (err) {
+                console.error("Failed to fetch performance", err);
+            }
+        }
+
+        // Poll status every 5 seconds
+        setInterval(updateStatus, 5000);
+        updateStatus();
+    </script>
+</body>
+</html>

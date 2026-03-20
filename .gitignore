@@ -1,0 +1,8 @@
+__pycache__
+__pycache__/train_gpt.cpython-313.pyc
+*.csv
+.env
+bot.log
+trades_state.json
+data/
+*.npz

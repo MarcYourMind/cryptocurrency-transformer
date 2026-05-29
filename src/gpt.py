@@ -52,7 +52,7 @@ import time
 import datetime
 import requests
 BASE_URL = "https://api.binance.com/api/v3/klines"
-INTERVAL = "15m"
+INTERVAL = "5m"
 MAX_LIMIT = 1000  # max klines per request
 for symbol in SYMBOL_LIST:
     all_klines = []
@@ -82,7 +82,7 @@ for symbol in SYMBOL_LIST:
     ])
     df = df[["timestamp", "open", "high", "low", "close", "volume"]]
     df = df.sort_values(by="timestamp")
-    df.to_csv(f"data/{symbol}_15m.csv", index=False)
+    df.to_csv(f"data/{symbol}_5m.csv", index=False)
 
 ###############################################################
 # 3. Load data
@@ -95,8 +95,8 @@ for symbol in SYMBOL_LIST:
 #     STORE DF into MARKET_DATA using symbol as key
 MARKET_DATA = {}
 for filename in os.listdir("data"):
-    if filename.endswith("_15m.csv"):
-        symbol = filename.replace("_15m.csv", "")
+    if filename.endswith("_5m.csv"):
+        symbol = filename.replace("_5m.csv", "")
         df = pd.read_csv(os.path.join("data", filename))
         df = df.sort_values(by="timestamp").reset_index(drop=True)
         MARKET_DATA[symbol] = df

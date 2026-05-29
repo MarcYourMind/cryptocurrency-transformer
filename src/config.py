@@ -10,9 +10,9 @@ class Config:
     
     # Data
     SYMBOL_LIMIT = 100
-    INTERVAL = "15m"
-    LookbackWindow = 96  # 24 hours
-    ForwardLook = 12     # 3 hours
+    INTERVAL = "5m"
+    LookbackWindow = 288  # 24 hours
+    ForwardLook = 36     # 3 hours
     
     # Sideways detection
     SlopeThreshold = 0.0002 

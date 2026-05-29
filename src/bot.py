@@ -40,7 +40,7 @@ class TradingBot:
             
             self.symbols = []
             for f in files:
-                # e.g. BTCUSDT_15m.csv -> BTCUSDT
+                # e.g. BTCUSDT_5m.csv -> BTCUSDT
                 raw_symbol = f.split("_")[0]
                 # Convert to CCXT format: BTCUSDT -> BTC/USDT
                 # Assumption: all symbols end in USDT
@@ -62,7 +62,7 @@ class TradingBot:
         self.risk_per_trade = float(os.getenv("RISK_PER_TRADE", 0.01))
         self.leverage = int(os.getenv("LEVERAGE", 5))
         self.is_running = False
-        self.last_check_15m = None
+        self.last_check_5m = None
         self.thread = None
         
         # State tracking
@@ -107,14 +107,14 @@ class TradingBot:
         while self.is_running:
             try:
                 now = datetime.now()
-                
-                # 1. 15m Candle Check
-                # Run on every candle close (00, 15, 30, 45 minutes)
-                if now.minute % 15 == 0 and now.minute != self.last_check_15m:
+
+                # 1. 5m Candle Check
+                # Run on every candle close (00, 05, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55 minutes)
+                if now.minute % 5 == 0 and now.minute != self.last_check_5m:
                     for symbol in self.symbols:
                         self._check_for_signals(symbol)
-                    self.last_check_15m = now.minute
-                    
+                    self.last_check_5m = now.minute
+
                 # 2. 5m Management Check
                 if now.minute % 5 == 0:
                     self._manage_orders()
@@ -294,5 +294,5 @@ class TradingBot:
             "is_running": self.is_running,
             "symbols": self.symbols,
             "active_trades_count": len(self.active_trades),
-            "last_check_15m": self.last_check_15m
+            "last_check_5m": self.last_check_5m
         }

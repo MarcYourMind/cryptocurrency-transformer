@@ -63,21 +63,21 @@ def download_klines(symbol):
     print(f"Downloading data for {symbol}...")
     base_url = "https://api.binance.com/api/v3/klines"
     all_klines = []
-    # Start time: Let's get ~3 months of data. 
+    # Start time: Let's get ~3 months of data.
     # 3 months * 30 days * 24 hours * 60 mins = 129600 mins.
-    # 15m interval => 129600 / 15 = 8640 candles
+    # 5m interval => 129600 / 5 = 25920 candles
     # start_time = int(time.time() * 1000) - (90 * 24 * 60 * 60 * 1000)
-    
+
     # For robust training we normally want years, but let's do 10000 candles for now
     limit = 1000
     end_time = int(time.time() * 1000)
-    
-    # We will fetch backwards or just start from a fixed point. 
+
+    # We will fetch backwards or just start from a fixed point.
     # Let's fetch last 10000 candles (increased from 5000)
     # Because Binance API standard is start_time -> forward.
-    ncandles = 900*24*4  # 900 days in 15min candles
-    
-    start_time = end_time - (ncandles * 15 * 60 * 1000)
+    ncandles = 900*24*12  # 900 days in 5min candles
+
+    start_time = end_time - (ncandles * 5 * 60 * 1000)
     
     current_start = start_time
     

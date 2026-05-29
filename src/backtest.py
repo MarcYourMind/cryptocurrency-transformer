@@ -197,14 +197,14 @@ def process_single_symbol(f, threshold):
                 # Absolute index in df_low
                 abs_start_idx = win['idx'] + Config.LookbackWindow
                 
-                for step_idx in range(entry_idx, exit_idx + 1, 4): # Every 1h (4 * 15m)
-                    t_at_step = win['time'] + pd.Timedelta(minutes=(step_idx + 1) * 15)
+                for step_idx in range(entry_idx, exit_idx + 1, 12): # Every 1h (12 * 5m)
+                    t_at_step = win['time'] + pd.Timedelta(minutes=(step_idx + 1) * 5)
                     # Use midpoint for "floating" price to be more representative than just low
                     p_at_step = (df_low[abs_start_idx + step_idx] + df_high[abs_start_idx + step_idx]) / 2
                     floating_prices.append((t_at_step, p_at_step))
                 
                 symbol_trades.append({
-                    'entry_time': win['time'] + pd.Timedelta(minutes=(entry_idx + 1) * 15),
+                    'entry_time': win['time'] + pd.Timedelta(minutes=(entry_idx + 1) * 5),
                     'exit_time': exit_time,
                     'symbol': symbol,
                     'prob': best_candidate['prob'],

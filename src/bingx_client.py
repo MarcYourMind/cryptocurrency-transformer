@@ -28,7 +28,7 @@ class BingXClient:
         balance = self.exchange.fetch_balance()
         return balance['USDT']['total']
 
-    def fetch_klines(self, symbol, timeframe='15m', limit=100):
+    def fetch_klines(self, symbol, timeframe='5m', limit=100):
         """Fetch latest klines and return a DataFrame."""
         ohlcv = self.exchange.fetch_ohlcv(symbol, timeframe=timeframe, limit=limit)
         df = pd.DataFrame(ohlcv, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])

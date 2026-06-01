@@ -116,6 +116,87 @@ Auto-detection: Finds the latest results_*.json if no file is specified.
 Quantstats Report: Generates a full HTML performance report (Metrics, Drawdowns, Monthly Returns, etc.).
 Easy execution: Run it with `python -m src.create_report`.
 
+## 📓 Educational Notebook
+
+The project includes a comprehensive Jupyter notebook designed as a university-style lab that walks you through the entire system from scratch:
+
+```
+Laboratorio_Transformers.ipynb
+```
+
+### What's Inside
+
+| Section | Topic |
+|---------|-------|
+| 0 | Introduction & Objectives |
+| 1 | Transformer Theory (from zero — numerical self-attention example, from-scratch implementation) |
+| 2 | Sideways Markets & Regime Detection |
+| 3 | Volume Profile Feature Engineering |
+| 4 | Forward Simulation Labeling |
+| 5 | Data Download & Preparation |
+| 6 | Data Leakage — The 3 Critical Flaws (85% fake → 60% real) |
+| 7 | VolumeProfileTransformer Architecture |
+| 8 | Training with Early Stopping |
+| 9 | Evaluation & Calibration Curves |
+| 10 | Backtesting |
+| 11 | Live Inference (Strategy class) |
+| 12 | Trading Bot Architecture |
+| 13 | **Experimentation Lab** (grid search, sensitivity analysis, model comparison) |
+| 14 | Conclusions |
+
+All explanatory text is in **Spanish**. Code is in English. Every cell is runnable.
+
+### How to Run
+
+**1. Install dependencies:**
+```bash
+pip install -r requirements.txt
+pip install jupyter
+```
+
+**2. Launch the notebook:**
+```bash
+jupyter notebook Laboratorio_Transformers.ipynb
+```
+Or with JupyterLab:
+```bash
+jupyter lab Laboratorio_Transformers.ipynb
+```
+Or in VS Code: open the file and select the Jupyter kernel.
+
+**3. Run cells in order** (Shift+Enter). The notebook is designed to run top-to-bottom in a single sitting.
+
+**If you skip sections**, run the **global setup cell** (cell 6 — the one with `CONFIGURACIÓN GLOBAL`) first. It loads all imports, sets up paths, and initializes shared variables. Each section also has its own imports for independence.
+
+**GPU vs CPU:** The notebook works on CPU. GPU is automatically detected and used if available.
+
+**Internet connection:** Sections 1–4 and 13 work offline with synthetic data. Section 5 (data download) requires internet to fetch from Binance. If offline, the notebook falls back to local CSVs in the `data/` folder.
+
+### Experimentation Section (13)
+
+Section 13 lets you define custom hyperparameter configurations, run experiments, and compare results:
+
+```python
+# Example: define your own config
+my_config = ExperimentConfig(
+    name='my_experiment',
+    embed_dim=256,
+    num_heads=8,
+    num_layers=6,
+    dropout=0.2,
+    learning_rate=5e-4,
+)
+
+# Run and save results automatically
+result = runner.run_single(my_config, train_loader, val_loader, test_loader)
+runner.save_result(result)
+
+# Compare all experiments in a table
+df = runner.get_results_df()
+```
+
+Results are persisted to `results/experiments/all_results.json` and can be reloaded across sessions.
+
 ## Strategy Details
 - **Entry**: Last close price of a sideways window.
 - **Stop Loss**: 1.0 * ATR.
